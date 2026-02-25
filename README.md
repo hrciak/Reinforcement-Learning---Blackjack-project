@@ -1,209 +1,135 @@
-Project Overview
+# 🃏 Reinforcement Learning — Blackjack
 
-This project implements and compares multiple tabular Reinforcement Learning (RL) algorithms using the Blackjack environment from Gymnasium (Toy Text domain).
+> **SOW-BKI258 Reinforcement Learning** · Radboud University · 2025–2026
 
-The objective is to analyze how different RL methods—Dynamic Programming (DP), Monte Carlo (MC), and Temporal Difference (TD)—learn optimal policies in a stochastic, episodic card game setting.
+A comparative study of tabular Reinforcement Learning algorithms applied to the **Blackjack** environment from [Gymnasium](https://gymnasium.farama.org/). We implement and evaluate Dynamic Programming, Monte Carlo, and Temporal Difference methods, and analyse their performance in a written report inside the Jupyter Notebook.
 
-Blackjack is a finite Markov Decision Process (MDP) with:
+---
 
-Discrete state space
+## 📁 Project Structure
 
-Discrete action space
+```
+.
+├── notebook.ipynb       # Main Jupyter Notebook (environment + report)
+├── dp.py                # Dynamic Programming algorithms
+├── mc.py                # Monte Carlo algorithms
+├── td.py                # Temporal Difference algorithms
+└── requirements.txt     # Project dependencies
+```
 
-Episodic structure
+---
 
-Stochastic transitions
+## 🎰 Environment
 
-The agent’s goal is to maximize expected cumulative reward by learning when to hit or stick based on the player’s sum, dealer’s visible card, and usable ace indicator.
+We use the **Blackjack-v1** environment from Gymnasium's *Toy Text* collection — a classic episodic card game with a discrete state and action space, well-suited for tabular RL methods.
 
-Environment: Blackjack
-
-The environment is instantiated via:
-
+```python
+import gymnasium as gym
 env = gym.make("Blackjack-v1")
-State Representation
+obs, info = env.reset()
+```
 
-Each state is represented as a tuple:
+- **State space:** (player sum, dealer showing card, usable ace)
+- **Action space:** `0` = stick, `1` = hit
+- **Goal:** Reach a hand value closer to 21 than the dealer without going bust
 
-Player’s current sum (12–21)
+---
 
-Dealer’s visible card (1–10)
+## 🤖 Implemented Algorithms
 
-Usable ace (True/False)
+### Dynamic Programming (`dp.py`)
+Requires full knowledge of the environment's transition dynamics.
 
-Action Space
+| Algorithm | Method |
+|---|---|
+| Policy Evaluation | Iterative, computes state values V(s) |
+| Policy Improvement | Greedy policy update |
+| Value Iteration | Combined evaluation + improvement |
 
-0: Stick
+### Monte Carlo (`mc.py`)
+Learns from complete episodes without a model of the environment.
 
-1: Hit
+| Algorithm | Method |
+|---|---|
+| MC Prediction | First-visit, evaluates action values Q(s,a) |
+| MC Control | Exploring Starts *or* ε-Greedy strategy |
 
-Reward Structure
+### Temporal Difference (`td.py`)
+Bootstraps from incomplete episodes, learning at every step.
 
-+1 → Player wins
+| Algorithm | Method |
+|---|---|
+| TD(0) | One-step value prediction |
+| SARSA | On-policy ε-Greedy control |
+| Q-Learning | Off-policy ε-Greedy control |
 
-0 → Draw
+> A **random baseline agent** is also included for benchmarking.
 
-−1 → Player loses
+---
 
-Key Characteristics
+## 📊 Report
 
-Episodic environment (terminal when player sticks or busts)
+The report is written **inside** `notebook.ipynb` and covers:
 
-Stochastic transitions (card draws)
+- **Introduction** — environment description, agent objective, research question
+- **Dynamic Programming** — algorithm descriptions, parameter sensitivity (γ, θ), policy plots
+- **Monte Carlo** — prediction and control results, hyperparameter tuning
+- **Temporal Difference** — SARSA vs Q-Learning comparison, ε decay strategy
+- **Comparison & Discussion** — MC vs TD metrics (cumulative reward, RMSE, sample efficiency)
+- **Conclusion** — key findings and algorithm trade-offs
 
-Suitable for tabular methods (manageable state space)
+*Target length: ~1000–1500 words.*
 
-Code Structure
+---
 
-The implementation is modular and consists of:
+## ⚙️ Setup
 
-dp.py → Dynamic Programming algorithms
+```bash
+# Clone the repository
+git clone <repo-url>
+cd <repo-folder>
 
-mc.py → Monte Carlo algorithms
+# Install dependencies
+pip install -r requirements.txt
+```
 
-td.py → Temporal Difference algorithms
+**`requirements.txt`** includes at minimum:
+```
+gymnasium
+numpy
+matplotlib
+jupyter
+```
 
-notebook.ipynb → Environment setup, experiments, plots, and report
+---
 
-The notebook calls functions from the algorithm files to run experiments and visualize results.
+## 📅 Deadlines
 
-Core Environment Functions
+| Date | Milestone |
+|---|---|
+| 09 Feb 2026 | Workgroup 1 — Environment setup |
+| 20 Feb 2026 | Workgroup 2 — Dynamic Programming |
+| 23 Feb 2026 | Workgroup 3 — Monte Carlo |
+| 02 Mar 2026 | Workgroup 4 — Temporal Difference |
+| 09 Mar 2026 | Workgroup 5 — Overflow / comparison |
+| **05 Apr 2026** | **Final submission deadline (23:59)** |
 
-The Blackjack environment follows the standard Gymnasium API:
+---
 
-1. reset()
+## 📋 Grading Overview
 
-Initializes a new episode.
+| Component | Points |
+|---|---|
+| Dynamic Programming (code + report) | 2 pt |
+| Monte Carlo (code + report) | 2 pt |
+| Temporal Difference (code + report) | 2 pt |
+| Report (intro, results, discussion, style) | 2 pt |
+| Bonus (deep RL, exceptional environment) | +1 pt |
 
-state, info = env.reset()
-2. step(action)
+> Note: Predefined Gymnasium environments are not eligible for environment originality/correctness points. Max grade is capped at 10.0.
 
-Executes an action and returns:
+---
 
-next_state, reward, terminated, truncated, info = env.step(action)
-3. render() (optional)
+## 👥 Group
 
-Displays current game state.
-
-Additional Utility Functions (Custom)
-
-To support RL algorithms, the following utility functions are integrated:
-
-Episode Handling
-
-generate_episode(policy)
-Generates a full episode: (state, action, reward) sequence.
-
-is_terminal(state)
-Checks if the episode has ended.
-
-Policy Utilities
-
-epsilon_greedy_policy(Q, state, epsilon)
-Samples action under ε-greedy exploration.
-
-greedy_policy(Q, state)
-Returns action with highest Q-value.
-
-Value Conversions
-
-q_to_v(Q)
-Converts action-value function to state-value function.
-
-extract_policy(Q)
-Extracts deterministic policy from Q-values.
-
-Evaluation & Metrics
-
-compute_cumulative_reward(policy, n_episodes)
-
-compute_rmse(Q, Q_optimal)
-
-plot_learning_curve(rewards)
-
-plot_policy(policy)
-
-plot_value_function(V)
-
-Implemented Reinforcement Learning Algorithms
-1. Dynamic Programming (dp.py)
-
-policy_evaluation(policy, env, gamma, theta)
-
-policy_improvement(V, env, gamma)
-
-policy_iteration(env, gamma, theta)
-
-value_iteration(env, gamma, theta)
-
-Purpose:
-Provides ground truth optimal values and policies for comparison.
-
-2. Monte Carlo Methods (mc.py)
-
-mc_prediction(env, policy, gamma, n_episodes)
-
-mc_control_es(env, gamma, n_episodes)
-
-mc_control_epsilon_greedy(env, gamma, epsilon, n_episodes)
-
-Characteristics:
-
-Model-free
-
-Episode-based updates
-
-High variance, unbiased estimates
-
-3. Temporal Difference Learning (td.py)
-
-td_zero(env, policy, alpha, gamma, n_episodes)
-
-sarsa(env, alpha, gamma, epsilon, n_episodes)
-
-q_learning(env, alpha, gamma, epsilon, n_episodes)
-
-Characteristics:
-
-Bootstrapping updates
-
-Online learning
-
-Lower variance than MC
-
-4. Baseline Agent
-
-random_policy()
-Used as performance benchmark.
-
-Evaluation Metrics
-
-Algorithms are compared using:
-
-Cumulative reward per episode
-
-Learning curves
-
-RMSE vs DP optimal values
-
-Sample efficiency
-
-Final policy comparison
-
-Project Objective
-
-The primary objective is to:
-
-Implement tabular RL algorithms.
-
-Analyze their convergence behavior in Blackjack.
-
-Compare learning efficiency and policy quality.
-
-Evaluate strengths and limitations of DP, MC, and TD methods.
-
-Summary
-
-This project investigates how different reinforcement learning paradigms perform in the Blackjack environment from Gymnasium.
-
-Dynamic Programming provides optimal reference values, while Monte Carlo and Temporal Difference methods learn through interaction. Their convergence speed, stability, and final policy performance are systematically compared using quantitative metrics and visualizations.
+Made with ♠️ by Group **[X]** — Radboud University, Period 3, 2025–2026
