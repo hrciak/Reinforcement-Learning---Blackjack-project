@@ -70,7 +70,7 @@ Bootstraps from incomplete episodes, learning at every step.
 
 ## 📊 Report
 
-The report is written inside `notebook.ipynb` and covers:
+The report is written inside `main.ipynb` and covers:
 
 - **Introduction** — environment description, agent objective, research question
 - **Dynamic Programming** — algorithm descriptions, parameter sensitivity (γ, θ), policy plots
@@ -93,12 +93,11 @@ cd <repo-folder>
 pip install -r requirements.txt
 ```
 
-**`requirements.txt`** includes at minimum:
+**`requirements.txt`** includes :
 ```
 gymnasium
 numpy
-matplotlib
-jupyter
+importlib
 ```
 
 
