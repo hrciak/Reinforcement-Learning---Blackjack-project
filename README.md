@@ -11,7 +11,7 @@ A comparative study of tabular Reinforcement Learning algorithms applied to the 
 
 ```
 .
-├── notebook.ipynb       # Main Jupyter Notebook (environment + report)
+├── main.ipynb       # Main Jupyter Notebook (environment + report)
 ├── dp.py                # Dynamic Programming algorithms
 ├── mc.py                # Monte Carlo algorithms
 ├── td.py                # Temporal Difference algorithms
