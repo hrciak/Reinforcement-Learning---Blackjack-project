@@ -2,10 +2,94 @@
 This will be for Temporal difference algorithms such as Sarsa and Q-Learning
 '''
 # 1. SARSA (On Policy)
+def sarsa(env, num_episodes, alpha=0.1, gamma=0.99, epsilon=0.1, track_training=False):
+    """
+    if track_training = True, return (Q, training_rewards, training_episodes)
+    else return just Q
+    """
+    Q = np.zeros((32 * 11 * 2, env.action_space.n))
+
+    training_rewards = []
+    training_episodes_list = []
+    checkpoint_interval = max(1, num_episodes // 50)  # Create ~50 checkpoints
+    episode_reward_buffer = []
+
+    for episode in range(num_episodes):
+        state, _ = env.reset() # start a new game
+        done = False
+        episode_reward = 0
+
+        # SARSA picks the First action before the loop starts, whereas Q learning picks actions inside the loop
+        action = epsilon_greedy(Q, state, epsilon, env)
+
+        while not done:
+            state_idx = encode_state(state)
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated # to check if the game is over
+            episode_reward += reward # tracks the reward
+
+            next_action = epsilon_greedy(Q, next_state, epsilon, env)
+            next_state_idx = encode_state(next_state)
+
+            if done:
+                Q[state_idx, action] = Q[state_idx, action] + alpha * (reward - Q[state_idx, action])
+            else:
+                Q[state_idx, action] = Q[state_idx, action] + alpha * (reward + gamma * Q[next_state_idx, next_action] - Q[state_idx, action])
+
+            state = next_state
+            action = next_action
+
+        # Track training progress at intervals
+        if track_training:
+            episode_reward_buffer.append(episode_reward)
+            if (episode + 1) % checkpoint_interval == 0:
+                avg_reward = np.mean(episode_reward_buffer)
+                training_rewards.append(avg_reward)
+                training_episodes_list.append(episode + 1)
+                episode_reward_buffer = []
+
+    if track_training:
+        return Q, training_rewards, training_episodes_list
+    else:
+        return Q
+
+def test_sarsa(env, Q, num_episodes=1000):
+
+    rewards = []
+    wins = 0
+    losses = 0
+    draws = 0
+
+    for episode in range(num_episodes):
+        state, _ = env.reset()
+        done = False
+        episode_reward = 0
+
+        while not done:
+            state_idx = encode_state(state)
+            action = np.argmax(Q[state_idx, :])
+
+            state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+            episode_reward += reward
+
+        rewards.append(episode_reward)
+
+        if episode_reward > 0:
+            wins += 1
+        elif episode_reward < 0:
+            losses += 1
+        else:
+            draws +=1
+
+    avg_reward = np.mean(rewards)
+    win_rate = wins / num_episodes
+
+    if Q.shape != (32 * 11 * 2, env.action_space.n):
+        raise ValueError ("Q-table shape does not match environment")
+    return avg_reward, win_rate, rewards
 
 
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 # 2.Q-learning TDalg (Off Policy)
 
 import numpy as np
@@ -123,4 +207,42 @@ def test_q_learning(env, Q, num_episodes=1000):
     return avg_reward, win_rate, rewards
 
 
- 
+def random_agent(env, num_episodes=1000):
+    """
+    baseline random agent for blackjack env, it selects action randomly
+
+    returns:
+    average reward over episodes.
+    proportion of a winning episodes.
+    list of individual episode rewards.
+    """
+    rewards = []
+    wins = 0
+    losses = 0
+    draws = 0
+
+    for episode in range(num_episodes):
+        state, _ = env.reset()
+        done = False
+        episode_reward = 0
+
+        while not done:
+            action = env.action_space.sample()  # completely random action every time
+
+            state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+            episode_reward += reward
+
+        rewards.append(episode_reward)
+
+        if episode_reward > 0:
+            wins += 1
+        elif episode_reward < 0:
+            losses += 1
+        else:
+            draws += 1
+
+    avg_reward = np.mean(rewards)
+    win_rate = wins / num_episodes
+
+    return avg_reward, win_rate, rewards
